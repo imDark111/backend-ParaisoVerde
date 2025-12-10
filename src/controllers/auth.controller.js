@@ -75,10 +75,12 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('❌ Error en registro:', error);
     res.status(500).json({
       success: false,
       message: 'Error al registrar usuario',
-      error: error.message
+      error: error.message,
+      detalles: error.stack
     });
   }
 };
@@ -190,10 +192,12 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('❌ Error en login:', error);
     res.status(500).json({
       success: false,
       message: 'Error al iniciar sesión',
-      error: error.message
+      error: error.message,
+      detalles: error.stack
     });
   }
 };

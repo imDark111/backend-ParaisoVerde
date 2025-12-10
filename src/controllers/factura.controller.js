@@ -107,13 +107,11 @@ exports.obtenerFacturas = async (req, res) => {
     
     let filtro = {};
     
+    // Si es cliente, buscar facturas de sus reservas
     if (req.usuario.rol === 'cliente') {
-      // Buscar facturas del cliente
-      const Cliente = require('../models/Cliente');
-      const cliente = await Cliente.findOne({ usuarioAsociado: req.usuario._id });
-      if (cliente) {
-        filtro.cliente = cliente._id;
-      }
+      const reservasUsuario = await Reserva.find({ usuario: req.usuario._id }).select('_id');
+      const reservaIds = reservasUsuario.map(r => r._id);
+      filtro.reserva = { $in: reservaIds };
     }
 
     if (estadoPago) filtro.estadoPago = estadoPago;
@@ -132,6 +130,7 @@ exports.obtenerFacturas = async (req, res) => {
       data: facturas
     });
   } catch (error) {
+    console.error('❌ Error al obtener facturas:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener facturas',

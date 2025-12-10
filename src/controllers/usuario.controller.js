@@ -159,9 +159,35 @@ exports.cambiarFotoPerfil = async (req, res) => {
 // @access  Private
 exports.cambiarPassword = async (req, res) => {
   try {
-    const { passwordActual, passwordNuevo } = req.body;
+    console.log('📝 Cambiar contraseña - Usuario ID:', req.usuario?._id);
+    console.log('📝 Body recibido:', { passwordActual: '***', passwordNuevo: '***' });
+
+    // Aceptar tanto passwordNuevo como passwordNueva (frontend usa passwordNueva)
+    const { passwordActual, passwordNuevo, passwordNueva } = req.body;
+    const nuevaPassword = passwordNuevo || passwordNueva;
+
+    if (!passwordActual || !nuevaPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Por favor proporcione la contraseña actual y la nueva'
+      });
+    }
+
+    if (!req.usuario || !req.usuario._id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+    }
 
     const usuario = await Usuario.findById(req.usuario._id).select('+password');
+
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
 
     // Verificar contraseña actual
     const passwordCorrecto = await usuario.compararPassword(passwordActual);
@@ -172,18 +198,22 @@ exports.cambiarPassword = async (req, res) => {
       });
     }
 
-    usuario.password = passwordNuevo;
+    usuario.password = nuevaPassword;
     await usuario.save();
+
+    console.log('✅ Contraseña actualizada exitosamente');
 
     res.json({
       success: true,
       message: 'Contraseña actualizada exitosamente'
     });
   } catch (error) {
+    console.error('❌ Error al cambiar contraseña:', error);
     res.status(500).json({
       success: false,
       message: 'Error al cambiar contraseña',
-      error: error.message
+      error: error.message,
+      detalles: error.stack
     });
   }
 };

@@ -1,0 +1,252 @@
+const Usuario = require('../models/Usuario');
+const fs = require('fs').promises;
+const path = require('path');
+
+// @desc    Obtener todos los usuarios
+// @route   GET /api/usuarios
+// @access  Private/Admin
+exports.obtenerUsuarios = async (req, res) => {
+  try {
+    const { rol, activo } = req.query;
+    
+    let filtro = {};
+    if (rol) filtro.rol = rol;
+    if (activo !== undefined) filtro.activo = activo === 'true';
+
+    const usuarios = await Usuario.find(filtro)
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: usuarios.length,
+      data: usuarios
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener usuarios',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Obtener un usuario
+// @route   GET /api/usuarios/:id
+// @access  Private
+exports.obtenerUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id);
+
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: usuario
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener usuario',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Actualizar perfil de usuario
+// @route   PUT /api/usuarios/perfil
+// @access  Private
+exports.actualizarPerfil = async (req, res) => {
+  try {
+    const camposPermitidos = {
+      nombreUsuario: req.body.nombreUsuario,
+      nombres: req.body.nombres,
+      apellidos: req.body.apellidos,
+      telefono: req.body.telefono,
+      direccion: req.body.direccion,
+      email: req.body.email
+    };
+
+    // Remover campos undefined
+    Object.keys(camposPermitidos).forEach(key => 
+      camposPermitidos[key] === undefined && delete camposPermitidos[key]
+    );
+
+    const usuario = await Usuario.findByIdAndUpdate(
+      req.usuario._id,
+      camposPermitidos,
+      { new: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Perfil actualizado exitosamente',
+      data: usuario
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar perfil',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Cambiar foto de perfil
+// @route   PUT /api/usuarios/foto-perfil
+// @access  Private
+exports.cambiarFotoPerfil = async (req, res) => {
+  try {
+    console.log('📸 Petición de cambio de foto recibida');
+    console.log('📸 Usuario ID:', req.usuario._id);
+    console.log('📸 Archivo recibido:', req.file);
+    
+    if (!req.file) {
+      console.log('❌ No se recibió archivo');
+      return res.status(400).json({
+        success: false,
+        message: 'No se proporcionó ninguna imagen'
+      });
+    }
+
+    const usuario = await Usuario.findById(req.usuario._id);
+    console.log('📸 Usuario encontrado:', usuario.nombreUsuario);
+
+    // Eliminar foto anterior si no es la default
+    if (usuario.fotoPerfil && usuario.fotoPerfil !== 'default-avatar.jpg') {
+      const fotoAnterior = path.join(__dirname, '../../uploads/avatars/', path.basename(usuario.fotoPerfil));
+      try {
+        await fs.unlink(fotoAnterior);
+        console.log('🗑️ Foto anterior eliminada');
+      } catch (error) {
+        console.log('⚠️ No se pudo eliminar la foto anterior');
+      }
+    }
+
+    // Construir URL completa para la foto
+    const baseUrl = process.env.BASE_URL || `http://${req.get('host')}`;
+    const fotoUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+    
+    usuario.fotoPerfil = fotoUrl;
+    await usuario.save();
+    
+    console.log('✅ Foto actualizada:', usuario.fotoPerfil);
+
+    res.json({
+      success: true,
+      message: 'Foto de perfil actualizada',
+      data: {
+        fotoPerfil: usuario.fotoPerfil
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error al cambiar foto:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cambiar foto de perfil',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Cambiar contraseña
+// @route   PUT /api/usuarios/cambiar-password
+// @access  Private
+exports.cambiarPassword = async (req, res) => {
+  try {
+    const { passwordActual, passwordNuevo } = req.body;
+
+    const usuario = await Usuario.findById(req.usuario._id).select('+password');
+
+    // Verificar contraseña actual
+    const passwordCorrecto = await usuario.compararPassword(passwordActual);
+    if (!passwordCorrecto) {
+      return res.status(401).json({
+        success: false,
+        message: 'Contraseña actual incorrecta'
+      });
+    }
+
+    usuario.password = passwordNuevo;
+    await usuario.save();
+
+    res.json({
+      success: true,
+      message: 'Contraseña actualizada exitosamente'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al cambiar contraseña',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Actualizar usuario (Admin)
+// @route   PUT /api/usuarios/:id
+// @access  Private/Admin
+exports.actualizarUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Usuario actualizado exitosamente',
+      data: usuario
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar usuario',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Eliminar usuario
+// @route   DELETE /api/usuarios/:id
+// @access  Private/Admin
+exports.eliminarUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      { activo: false },
+      { new: true }
+    );
+
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Usuario desactivado exitosamente'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar usuario',
+      error: error.message
+    });
+  }
+};

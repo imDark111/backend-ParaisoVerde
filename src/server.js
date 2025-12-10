@@ -92,9 +92,16 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en http://192.168.0.11:${PORT}`);
-  console.log(`📱 Accesible desde tu celular en la red local`);
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  if (process.env.RAILWAY_ENVIRONMENT) {
+    console.log(`🚀 Servidor corriendo en Railway en puerto ${PORT}`);
+    console.log(`🌐 URL: ${process.env.BASE_URL || 'Configurar BASE_URL'}`);
+  } else {
+    console.log(`🚀 Servidor corriendo en http://192.168.0.11:${PORT}`);
+    console.log(`📱 Accesible desde tu celular en la red local`);
+  }
 });
 
 module.exports = app;

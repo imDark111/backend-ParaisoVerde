@@ -96,6 +96,7 @@ const crearLogEspecifico = async (usuario, accion, entidad, descripcion, detalle
     });
   } catch (error) {
     console.error('Error al crear log específico:', error);
+    // No lanzar error para no interrumpir el flujo principal
   }
 };
 

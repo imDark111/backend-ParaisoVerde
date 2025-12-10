@@ -29,11 +29,13 @@ const logSchema = new mongoose.Schema({
   metodo: {
     type: String,
     enum: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    trim: true
+    trim: true,
+    required: false
   },
   ruta: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   descripcion: {
     type: String,

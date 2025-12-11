@@ -117,20 +117,24 @@ exports.cambiarFotoPerfil = async (req, res) => {
     const usuario = await Usuario.findById(req.usuario._id);
     console.log('📸 Usuario encontrado:', usuario.nombreUsuario);
 
-    // Eliminar foto anterior si no es la default
+    // Eliminar foto anterior de Cloudinary si existe
     if (usuario.fotoPerfil && usuario.fotoPerfil !== 'default-avatar.jpg') {
-      const fotoAnterior = path.join(__dirname, '../../uploads/avatars/', path.basename(usuario.fotoPerfil));
       try {
-        await fs.unlink(fotoAnterior);
-        console.log('🗑️ Foto anterior eliminada');
+        // Extraer public_id de la URL de Cloudinary
+        const urlParts = usuario.fotoPerfil.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        const publicId = `paraiso-verde/avatars/${filename.split('.')[0]}`;
+        
+        const cloudinary = require('cloudinary').v2;
+        await cloudinary.uploader.destroy(publicId);
+        console.log('🗑️ Foto anterior eliminada de Cloudinary');
       } catch (error) {
-        console.log('⚠️ No se pudo eliminar la foto anterior');
+        console.log('⚠️ No se pudo eliminar la foto anterior:', error.message);
       }
     }
 
-    // Construir URL completa para la foto
-    const baseUrl = process.env.BASE_URL || `http://${req.get('host')}`;
-    const fotoUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+    // La URL ya viene de Cloudinary en req.file.path
+    const fotoUrl = req.file.path;
     
     usuario.fotoPerfil = fotoUrl;
     await usuario.save();

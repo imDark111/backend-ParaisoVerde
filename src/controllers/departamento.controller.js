@@ -174,8 +174,9 @@ exports.subirImagenes = async (req, res) => {
       });
     }
 
+    // Las URLs ya vienen de Cloudinary en file.path
     const imagenes = req.files.map(file => ({
-      url: `/uploads/departamentos/${file.filename}`,
+      url: file.path,
       descripcion: req.body.descripcion || ''
     }));
 

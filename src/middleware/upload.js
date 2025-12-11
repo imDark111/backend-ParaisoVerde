@@ -1,32 +1,32 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Crear directorio de uploads si no existe
-const uploadsDir = './uploads';
-const avatarsDir = './uploads/avatars';
-const departamentosDir = './uploads/departamentos';
-
-[uploadsDir, avatarsDir, departamentosDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dt9ybqutn',
+  api_key: process.env.CLOUDINARY_API_KEY || '184995567315769',
+  api_secret: process.env.CLOUDINARY_API_SECRET || '5x0FSeq2sWQfReaWr1UaQ_LDzTM'
 });
 
-// Configuración de almacenamiento
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+// Configuración de almacenamiento en Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    let folder = 'paraiso-verde';
+    
     if (file.fieldname === 'fotoPerfil') {
-      cb(null, avatarsDir);
+      folder = 'paraiso-verde/avatars';
     } else if (file.fieldname === 'imagenes') {
-      cb(null, departamentosDir);
-    } else {
-      cb(null, uploadsDir);
+      folder = 'paraiso-verde/departamentos';
     }
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    
+    return {
+      folder: folder,
+      allowed_formats: ['jpeg', 'jpg', 'png', 'gif', 'webp'],
+      transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+    };
   }
 });
 

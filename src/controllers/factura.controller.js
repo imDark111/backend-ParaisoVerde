@@ -130,7 +130,7 @@ exports.obtenerFacturas = async (req, res) => {
       data: facturas
     });
   } catch (error) {
-    console.error('❌ Error al obtener facturas:', error);
+    console.error('Error al obtener facturas:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener facturas',
@@ -164,7 +164,7 @@ exports.obtenerFactura = async (req, res) => {
       });
     }
 
-    console.log('📄 Factura encontrada (antes):', {
+    console.log('Factura encontrada (antes):', {
       _id: factura._id,
       numeroFactura: factura.numeroFactura,
       clienteId: factura.cliente?._id || factura.cliente,
@@ -178,13 +178,13 @@ exports.obtenerFactura = async (req, res) => {
 
     // Si el cliente no está poblado, intentar poblar manualmente
     if (typeof factura.cliente === 'string' || (factura.cliente && !factura.cliente.nombres)) {
-      console.log('⚠️ Cliente no está poblado, intentando populate manual');
+      console.log('Cliente no está poblado, intentando populate manual');
       const Cliente = require('../models/Cliente');
       const clienteId = factura.cliente._id || factura.cliente;
       const clienteData = await Cliente.findById(clienteId);
       if (clienteData) {
         factura.cliente = clienteData;
-        console.log('✅ Cliente poblado manualmente:', clienteData.nombres, clienteData.apellidos);
+        console.log('Cliente poblado manualmente:', clienteData.nombres, clienteData.apellidos);
       }
     }
 
@@ -193,7 +193,7 @@ exports.obtenerFactura = async (req, res) => {
       data: factura
     });
   } catch (error) {
-    console.error('❌ Error en obtenerFactura:', error);
+    console.error('Error en obtenerFactura:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener factura',
@@ -294,7 +294,7 @@ exports.generarPDF = async (req, res) => {
     doc.pipe(res);
 
     // Encabezado
-    doc.fontSize(24).fillColor('#1b5e20').text('🏨 Hotel Paraíso Verde', 50, 50);
+    doc.fontSize(24).fillColor('#1b5e20').text('Hotel Paraíso Verde', 50, 50);
     doc.fontSize(10).fillColor('#666666')
       .text('Av. Principal #123, Ciudad', 50, 80)
       .text('Teléfono: (02) 123-4567', 50, 95)

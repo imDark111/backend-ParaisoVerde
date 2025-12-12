@@ -454,7 +454,7 @@ exports.checkOut = async (req, res) => {
       // Verificar si ya existe factura
       const facturaExistente = await Factura.findOne({ reserva: reserva._id });
       if (!facturaExistente) {
-        console.log('💰 Generando factura automática con cliente:', reserva.cliente);
+        console.log('Generando factura automática con cliente:', reserva.cliente);
         
         const factura = await Factura.create({
           reserva: reserva._id,
@@ -470,14 +470,14 @@ exports.checkOut = async (req, res) => {
           total: reserva.total
         });
         
-        console.log('✅ Factura generada automáticamente:', {
+        console.log('Factura generada automáticamente:', {
           numeroFactura: factura.numeroFactura,
           clienteId: factura.cliente,
           total: factura.total
         });
       }
     } catch (facturaError) {
-      console.error('❌ Error al generar factura automática:', facturaError);
+      console.error('Error al generar factura automática:', facturaError);
       // No fallar el checkout si hay error en la factura
     }
 

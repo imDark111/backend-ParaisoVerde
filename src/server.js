@@ -54,8 +54,8 @@ app.use('/uploads', (req, res, next) => {
 }, express.static('uploads'));
 
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Conectado a MongoDB'))
-  .catch(err => console.error('❌ Error de conexión a MongoDB:', err));
+  .then(() => console.log('Conectado a MongoDB'))
+  .catch(err => console.error('Error de conexión a MongoDB:', err));
 
 // Importar rutas
 const authRoutes = require('./routes/auth.routes');
@@ -82,7 +82,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reportes', reporteRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: '🏨 API de Paraíso Verde Hotel' });
+  res.json({ message: 'API de Paraíso Verde Hotel' });
 });
 
 app.use((err, req, res, next) => {
@@ -100,11 +100,11 @@ const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
   if (process.env.RAILWAY_ENVIRONMENT) {
-    console.log(`🚀 Servidor corriendo en Railway en puerto ${PORT}`);
-    console.log(`🌐 URL: ${process.env.BASE_URL || 'Configurar BASE_URL'}`);
+    console.log(`Servidor corriendo en Railway en puerto ${PORT}`);
+    console.log(`URL: ${process.env.BASE_URL || 'Configurar BASE_URL'}`);
   } else {
-    console.log(`🚀 Servidor corriendo en http://192.168.0.11:${PORT}`);
-    console.log(`📱 Accesible desde tu celular en la red local`);
+    console.log(`Servidor corriendo en http://192.168.0.11:${PORT}`);
+    console.log(`Accesible desde tu celular en la red local`);
   }
 });
 

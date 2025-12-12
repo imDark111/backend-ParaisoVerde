@@ -102,12 +102,12 @@ exports.actualizarPerfil = async (req, res) => {
 // @access  Private
 exports.cambiarFotoPerfil = async (req, res) => {
   try {
-    console.log('📸 Petición de cambio de foto recibida');
-    console.log('📸 Usuario ID:', req.usuario._id);
-    console.log('📸 Archivo recibido:', req.file);
+    console.log('Petición de cambio de foto recibida');
+    console.log('Usuario ID:', req.usuario._id);
+    console.log('Archivo recibido:', req.file);
     
     if (!req.file) {
-      console.log('❌ No se recibió archivo');
+      console.log('No se recibió archivo');
       return res.status(400).json({
         success: false,
         message: 'No se proporcionó ninguna imagen'
@@ -115,7 +115,7 @@ exports.cambiarFotoPerfil = async (req, res) => {
     }
 
     const usuario = await Usuario.findById(req.usuario._id);
-    console.log('📸 Usuario encontrado:', usuario.nombreUsuario);
+    console.log('Usuario encontrado:', usuario.nombreUsuario);
 
     // Eliminar foto anterior de Cloudinary si existe
     if (usuario.fotoPerfil && usuario.fotoPerfil !== 'default-avatar.jpg') {
@@ -127,9 +127,9 @@ exports.cambiarFotoPerfil = async (req, res) => {
         
         const cloudinary = require('cloudinary').v2;
         await cloudinary.uploader.destroy(publicId);
-        console.log('🗑️ Foto anterior eliminada de Cloudinary');
+        console.log('Foto anterior eliminada de Cloudinary');
       } catch (error) {
-        console.log('⚠️ No se pudo eliminar la foto anterior:', error.message);
+        console.log('No se pudo eliminar la foto anterior:', error.message);
       }
     }
 
@@ -139,7 +139,7 @@ exports.cambiarFotoPerfil = async (req, res) => {
     usuario.fotoPerfil = fotoUrl;
     await usuario.save();
     
-    console.log('✅ Foto actualizada:', usuario.fotoPerfil);
+    console.log('Foto actualizada:', usuario.fotoPerfil);
 
     res.json({
       success: true,
@@ -149,7 +149,7 @@ exports.cambiarFotoPerfil = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error al cambiar foto:', error);
+    console.error('Error al cambiar foto:', error);
     res.status(500).json({
       success: false,
       message: 'Error al cambiar foto de perfil',
@@ -163,8 +163,8 @@ exports.cambiarFotoPerfil = async (req, res) => {
 // @access  Private
 exports.cambiarPassword = async (req, res) => {
   try {
-    console.log('📝 Cambiar contraseña - Usuario ID:', req.usuario?._id);
-    console.log('📝 Body recibido:', { passwordActual: '***', passwordNuevo: '***' });
+    console.log('Cambiar contraseña - Usuario ID:', req.usuario?._id);
+    console.log('Body recibido:', { passwordActual: '***', passwordNuevo: '***' });
 
     // Aceptar tanto passwordNuevo como passwordNueva (frontend usa passwordNueva)
     const { passwordActual, passwordNuevo, passwordNueva } = req.body;
@@ -205,14 +205,14 @@ exports.cambiarPassword = async (req, res) => {
     usuario.password = nuevaPassword;
     await usuario.save();
 
-    console.log('✅ Contraseña actualizada exitosamente');
+    console.log('Contraseña actualizada exitosamente');
 
     res.json({
       success: true,
       message: 'Contraseña actualizada exitosamente'
     });
   } catch (error) {
-    console.error('❌ Error al cambiar contraseña:', error);
+    console.error('Error al cambiar contraseña:', error);
     res.status(500).json({
       success: false,
       message: 'Error al cambiar contraseña',

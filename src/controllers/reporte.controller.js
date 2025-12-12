@@ -9,7 +9,7 @@ exports.reporteReservas = async (req, res) => {
   try {
     const { fechaInicio, fechaFin, estado, departamento } = req.query;
 
-    console.log('📊 Generando reporte de reservas:', { fechaInicio, fechaFin, estado, departamento });
+    console.log('Generando reporte de reservas:', { fechaInicio, fechaFin, estado, departamento });
 
     let filtro = {};
 
@@ -36,7 +36,7 @@ exports.reporteReservas = async (req, res) => {
       .populate('departamento')
       .sort({ createdAt: -1 });
 
-    console.log(`✅ Encontradas ${reservas.length} reservas`);
+    console.log(`Encontradas ${reservas.length} reservas`);
 
     // Estadísticas del reporte
     const totalReservas = reservas.length;
@@ -83,7 +83,7 @@ exports.reporteFinanciero = async (req, res) => {
   try {
     const { fechaInicio, fechaFin } = req.query;
 
-    console.log('💰 Generando reporte financiero:', { fechaInicio, fechaFin });
+    console.log('Generando reporte financiero:', { fechaInicio, fechaFin });
 
     let filtro = {};
 
@@ -108,7 +108,7 @@ exports.reporteFinanciero = async (req, res) => {
       .populate('cliente')
       .sort({ fechaEmision: -1 });
 
-    console.log(`✅ Encontradas ${facturas.length} facturas`);
+    console.log(`Encontradas ${facturas.length} facturas`);
 
     // Estadísticas
     const totalFacturas = facturas.length;

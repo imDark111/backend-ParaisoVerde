@@ -61,14 +61,14 @@ exports.obtenerDepartamento = async (req, res) => {
 // @access  Private/Admin
 exports.crearDepartamento = async (req, res) => {
   try {
-    console.log('📦 Datos recibidos para crear departamento:', JSON.stringify(req.body, null, 2));
-    console.log('🖼️ Imágenes recibidas:', req.body.imagenes);
-    console.log('✨ Características recibidas:', req.body.caracteristicas);
+    console.log('Datos recibidos para crear departamento:', JSON.stringify(req.body, null, 2));
+    console.log('Imágenes recibidas:', req.body.imagenes);
+    console.log('Características recibidas:', req.body.caracteristicas);
     
     const departamento = await Departamento.create(req.body);
 
-    console.log('✅ Departamento creado:', departamento._id);
-    console.log('🖼️ Imágenes guardadas:', departamento.imagenes);
+    console.log('Departamento creado:', departamento._id);
+    console.log('Imágenes guardadas:', departamento.imagenes);
 
     res.status(201).json({
       success: true,
@@ -76,7 +76,7 @@ exports.crearDepartamento = async (req, res) => {
       data: departamento
     });
   } catch (error) {
-    console.error('❌ Error al crear departamento:', error);
+    console.error('Error al crear departamento:', error);
     res.status(500).json({
       success: false,
       message: 'Error al crear departamento',
@@ -90,10 +90,10 @@ exports.crearDepartamento = async (req, res) => {
 // @access  Private/Admin
 exports.actualizarDepartamento = async (req, res) => {
   try {
-    console.log('📝 Actualizando departamento:', req.params.id);
-    console.log('📦 Datos recibidos:', JSON.stringify(req.body, null, 2));
-    console.log('🖼️ Imágenes recibidas:', req.body.imagenes);
-    console.log('✨ Características recibidas:', req.body.caracteristicas);
+    console.log('Actualizando departamento:', req.params.id);
+    console.log('Datos recibidos:', JSON.stringify(req.body, null, 2));
+    console.log('Imágenes recibidas:', req.body.imagenes);
+    console.log('Características recibidas:', req.body.caracteristicas);
     
     const departamento = await Departamento.findByIdAndUpdate(
       req.params.id,
@@ -108,8 +108,8 @@ exports.actualizarDepartamento = async (req, res) => {
       });
     }
 
-    console.log('✅ Departamento actualizado');
-    console.log('🖼️ Imágenes guardadas:', departamento.imagenes);
+    console.log('Departamento actualizado');
+    console.log('Imágenes guardadas:', departamento.imagenes);
 
     res.json({
       success: true,
@@ -117,7 +117,7 @@ exports.actualizarDepartamento = async (req, res) => {
       data: departamento
     });
   } catch (error) {
-    console.error('❌ Error al actualizar departamento:', error);
+    console.error('Error al actualizar departamento:', error);
     res.status(500).json({
       success: false,
       message: 'Error al actualizar departamento',

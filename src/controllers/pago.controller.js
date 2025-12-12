@@ -5,7 +5,7 @@ try {
   if (stripeKey && stripeKey.startsWith('sk_')) {
     stripe = require('stripe')(stripeKey);
   } else {
-    console.warn('⚠️ Stripe no configurado correctamente. Usando modo simulación.');
+    console.warn('Stripe no configurado correctamente. Usando modo simulación.');
   }
 } catch (error) {
   console.error('Error al inicializar Stripe:', error);
@@ -102,7 +102,7 @@ exports.crearIntencionPago = async (req, res) => {
         currency: 'usd',
         status: 'requires_payment_method'
       };
-      console.log('💳 Usando modo simulación de pago (sin Stripe real)');
+      console.log('Usando modo simulación de pago (sin Stripe real)');
     }
 
     res.json({
@@ -161,7 +161,7 @@ exports.confirmarPago = async (req, res) => {
 
     // Modo simulación para proyecto universitario
     if (!paymentIntent || paymentIntentId.startsWith('pi_test_')) {
-      console.log('💳 Confirmando pago en modo simulación');
+      console.log('Confirmando pago en modo simulación');
       const factura = await Factura.findById(facturaId);
       if (!factura) {
         return res.status(404).json({
@@ -241,7 +241,7 @@ exports.obtenerTarjetasPrueba = async (req, res) => {
       success: true,
       message: 'Tarjetas de prueba para entorno universitario',
       data: {
-        nota: '⚠️ SOLO PARA PRUEBAS - PROYECTO UNIVERSITARIO',
+        nota: 'SOLO PARA PRUEBAS - PROYECTO UNIVERSITARIO',
         tarjetas: [
           {
             tipo: 'Visa',
@@ -296,7 +296,7 @@ exports.webhookStripe = async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    console.log(`⚠️  Webhook signature verification failed.`, err.message);
+    console.log(`Webhook signature verification failed.`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -304,12 +304,12 @@ exports.webhookStripe = async (req, res) => {
   switch (event.type) {
     case 'payment_intent.succeeded':
       const paymentIntent = event.data.object;
-      console.log('💰 Pago exitoso:', paymentIntent.id);
+      console.log('Pago exitoso:', paymentIntent.id);
       // Aquí podrías actualizar la factura automáticamente
       break;
     case 'payment_intent.payment_failed':
       const failedPayment = event.data.object;
-      console.log('❌ Pago fallido:', failedPayment.id);
+      console.log('Pago fallido:', failedPayment.id);
       break;
     default:
       console.log(`Evento no manejado: ${event.type}`);

@@ -23,7 +23,8 @@ const allowedOrigins = [
   'http://192.168.0.11:8100',
   'capacitor://localhost',
   'ionic://localhost',
-  'http://localhost'
+  'http://localhost',
+  'https://localhost'
 ];
 
 // Agregar URLs de producción desde variables de entorno
@@ -42,7 +43,8 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1 || 
         origin.startsWith('capacitor://') || 
         origin.startsWith('ionic://') ||
-        origin.startsWith('http://')) {
+        origin.startsWith('http://') ||
+        origin.startsWith('https://localhost')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

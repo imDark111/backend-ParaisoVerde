@@ -2,6 +2,7 @@ const Reserva = require('../models/Reserva');
 const Departamento = require('../models/Departamento');
 const Cliente = require('../models/Cliente');
 const Usuario = require('../models/Usuario');
+const Factura = require('../models/Factura');
 
 // @desc    Crear reserva
 // @route   POST /api/reservas
@@ -174,10 +175,39 @@ exports.crearReserva = async (req, res) => {
     // Poblar datos
     await reserva.populate(['usuario', 'cliente', 'departamento']);
 
+    // Crear factura automáticamente
+    let factura = null;
+    try {
+      factura = await Factura.create({
+        reserva: reserva._id,
+        cliente: cliente._id,
+        subtotal: reserva.subtotal,
+        descuentos: {
+          clienteFrecuente: reserva.descuentoClienteFrecuente || 0
+        },
+        iva: reserva.iva || 0,
+        recargos: {
+          feriado: reserva.recargoFeriado || 0
+        },
+        total: reserva.total
+      });
+
+      await factura.populate(['reserva', 'cliente']);
+    } catch (facturaError) {
+      console.error('Error al crear factura automáticamente:', facturaError);
+      // No fallar la reserva si falla la factura, pero registrar el error
+    }
+
     res.status(201).json({
       success: true,
       message: 'Reserva creada exitosamente',
-      data: reserva
+      data: reserva,
+      factura: factura ? {
+        id: factura._id,
+        numeroFactura: factura.numeroFactura,
+        total: factura.total,
+        estadoPago: factura.estadoPago
+      } : null
     });
   } catch (error) {
     res.status(500).json({

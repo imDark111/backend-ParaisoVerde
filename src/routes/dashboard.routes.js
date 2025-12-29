@@ -6,7 +6,8 @@ const {
   obtenerCheckInsHoy,
   obtenerCheckOutsHoy,
   obtenerTodosCheckIns,
-  obtenerTodosCheckOuts
+  obtenerTodosCheckOuts,
+  obtenerAniosDisponibles
 } = require('../controllers/dashboard.controller');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -20,5 +21,6 @@ router.get('/checkins-hoy', obtenerCheckInsHoy);
 router.get('/checkouts-hoy', obtenerCheckOutsHoy);
 router.get('/checkins-todos', obtenerTodosCheckIns);
 router.get('/checkouts-todos', obtenerTodosCheckOuts);
+router.get('/anios-disponibles', obtenerAniosDisponibles);
 
 module.exports = router;

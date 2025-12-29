@@ -6,7 +6,8 @@ const {
   obtenerFacturas,
   obtenerFactura,
   registrarPago,
-  generarPDF
+  generarPDF,
+  obtenerFacturasRecientes
 } = require('../controllers/factura.controller');
 const { protect, authorize } = require('../middleware/auth');
 const { logger } = require('../middleware/logger');
@@ -66,6 +67,9 @@ router.post('/auto-generar', authorize('admin'), async (req, res) => {
     });
   }
 });
+
+// Obtener facturas recientes (para notificaciones)
+router.get('/recientes', authorize('admin'), obtenerFacturasRecientes);
 
 router.get('/:id/pdf', generarPDF);
 router.get('/:id', obtenerFactura);

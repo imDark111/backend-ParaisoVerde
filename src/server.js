@@ -20,7 +20,10 @@ const allowedOrigins = [
   'http://localhost:4200',
   'http://localhost:8100',
   'http://192.168.0.11:4200',
-  'http://192.168.0.11:8100'
+  'http://192.168.0.11:8100',
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost'
 ];
 
 // Agregar URLs de producción desde variables de entorno
@@ -32,7 +35,19 @@ if (process.env.FRONTEND_ADMIN_URL) {
 }
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Permitir peticiones sin origin (apps móviles, Postman, etc)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || 
+        origin.startsWith('capacitor://') || 
+        origin.startsWith('ionic://') ||
+        origin.startsWith('http://')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 

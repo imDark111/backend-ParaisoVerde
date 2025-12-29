@@ -352,3 +352,34 @@ exports.obtenerTodosCheckOuts = async (req, res) => {
     });
   }
 };
+
+// @desc    Obtener años disponibles de reservas
+// @route   GET /api/dashboard/anios-disponibles
+// @access  Private/Admin
+exports.obtenerAniosDisponibles = async (req, res) => {
+  try {
+    const anios = await Reserva.aggregate([
+      {
+        $group: {
+          _id: { $year: '$createdAt' }
+        }
+      },
+      {
+        $sort: { _id: -1 }
+      }
+    ]);
+
+    const aniosDisponibles = anios.map(item => item._id);
+
+    res.json({
+      success: true,
+      data: aniosDisponibles
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener años disponibles',
+      error: error.message
+    });
+  }
+};

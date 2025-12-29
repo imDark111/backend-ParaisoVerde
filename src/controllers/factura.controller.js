@@ -415,3 +415,44 @@ exports.generarPDF = async (req, res) => {
     });
   }
 };
+
+// @desc    Obtener facturas recientes
+// @route   GET /api/facturas/recientes
+// @access  Private/Admin
+exports.obtenerFacturasRecientes = async (req, res) => {
+  try {
+    const { fechaDesde } = req.query;
+    
+    if (!fechaDesde) {
+      return res.status(400).json({
+        success: false,
+        message: 'Parámetro fechaDesde requerido'
+      });
+    }
+
+    const fecha = new Date(fechaDesde);
+    
+    const facturas = await Factura.find({
+      createdAt: { $gte: fecha }
+    })
+      .populate({
+        path: 'reserva',
+        populate: { path: 'departamento' }
+      })
+      .populate('cliente')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: facturas.length,
+      data: facturas
+    });
+  } catch (error) {
+    console.error('Error al obtener facturas recientes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener facturas recientes',
+      error: error.message
+    });
+  }
+};

@@ -4,6 +4,32 @@ const Usuario = require('../models/Usuario');
 const Departamento = require('../models/Departamento');
 const Cliente = require('../models/Cliente');
 
+// Helper function: Generar array con los últimos 6 meses
+const generateLast6Months = () => {
+  const months = [];
+  const now = new Date();
+  
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      año: date.getFullYear(),
+      mes: date.getMonth() + 1
+    });
+  }
+  
+  return months;
+};
+
+// Helper function: Crear mapa de datos por mes para búsqueda O(1)
+const createMonthMap = (data) => {
+  const map = new Map();
+  data.forEach(item => {
+    const key = `${item._id.año}-${item._id.mes}`;
+    map.set(key, item);
+  });
+  return map;
+};
+
 // @desc    Obtener estadísticas del dashboard
 // @route   GET /api/dashboard/estadisticas
 // @access  Private/Admin
@@ -56,22 +82,6 @@ exports.obtenerEstadisticas = async (req, res) => {
     const totalClientes = await Cliente.countDocuments();
     const clientesFrecuentes = await Cliente.countDocuments({ esFrecuente: true });
 
-    // Generar array con los últimos 6 meses para asegurar que todos estén representados
-    const generateLast6Months = () => {
-      const months = [];
-      const now = new Date();
-      
-      for (let i = 5; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push({
-          año: date.getFullYear(),
-          mes: date.getMonth() + 1
-        });
-      }
-      
-      return months;
-    };
-
     const last6Months = generateLast6Months();
 
     // Reservas por mes (últimos 6 meses)
@@ -96,11 +106,13 @@ exports.obtenerEstadisticas = async (req, res) => {
       { $sort: { '_id.año': 1, '_id.mes': 1 } }
     ]);
 
+    // Crear mapa para búsqueda eficiente O(1)
+    const reservasMap = createMonthMap(reservasPorMesData);
+
     // Llenar meses faltantes con valores en cero
     const reservasPorMes = last6Months.map(month => {
-      const found = reservasPorMesData.find(
-        r => r._id.año === month.año && r._id.mes === month.mes
-      );
+      const key = `${month.año}-${month.mes}`;
+      const found = reservasMap.get(key);
       
       return found || {
         _id: { año: month.año, mes: month.mes },
@@ -131,11 +143,13 @@ exports.obtenerEstadisticas = async (req, res) => {
       { $sort: { '_id.año': 1, '_id.mes': 1 } }
     ]);
 
+    // Crear mapa para búsqueda eficiente O(1)
+    const ingresosMap = createMonthMap(ingresosPorMesData);
+
     // Llenar meses faltantes con valores en cero
     const ingresosPorMes = last6Months.map(month => {
-      const found = ingresosPorMesData.find(
-        i => i._id.año === month.año && i._id.mes === month.mes
-      );
+      const key = `${month.año}-${month.mes}`;
+      const found = ingresosMap.get(key);
       
       return found || {
         _id: { año: month.año, mes: month.mes },

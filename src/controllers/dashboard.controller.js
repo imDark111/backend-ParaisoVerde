@@ -56,8 +56,26 @@ exports.obtenerEstadisticas = async (req, res) => {
     const totalClientes = await Cliente.countDocuments();
     const clientesFrecuentes = await Cliente.countDocuments({ esFrecuente: true });
 
+    // Generar array con los últimos 6 meses para asegurar que todos estén representados
+    const generateLast6Months = () => {
+      const months = [];
+      const now = new Date();
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          año: date.getFullYear(),
+          mes: date.getMonth() + 1
+        });
+      }
+      
+      return months;
+    };
+
+    const last6Months = generateLast6Months();
+
     // Reservas por mes (últimos 6 meses)
-    const reservasPorMes = await Reserva.aggregate([
+    const reservasPorMesData = await Reserva.aggregate([
       {
         $match: {
           createdAt: {
@@ -78,8 +96,21 @@ exports.obtenerEstadisticas = async (req, res) => {
       { $sort: { '_id.año': 1, '_id.mes': 1 } }
     ]);
 
+    // Llenar meses faltantes con valores en cero
+    const reservasPorMes = last6Months.map(month => {
+      const found = reservasPorMesData.find(
+        r => r._id.año === month.año && r._id.mes === month.mes
+      );
+      
+      return found || {
+        _id: { año: month.año, mes: month.mes },
+        total: 0,
+        ingresos: 0
+      };
+    });
+
     // Ingresos por mes (últimos 6 meses)
-    const ingresosPorMes = await Factura.aggregate([
+    const ingresosPorMesData = await Factura.aggregate([
       {
         $match: {
           estadoPago: 'pagada',
@@ -99,6 +130,18 @@ exports.obtenerEstadisticas = async (req, res) => {
       },
       { $sort: { '_id.año': 1, '_id.mes': 1 } }
     ]);
+
+    // Llenar meses faltantes con valores en cero
+    const ingresosPorMes = last6Months.map(month => {
+      const found = ingresosPorMesData.find(
+        i => i._id.año === month.año && i._id.mes === month.mes
+      );
+      
+      return found || {
+        _id: { año: month.año, mes: month.mes },
+        total: 0
+      };
+    });
 
     // Tasa de ocupación
     const diasEnMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();

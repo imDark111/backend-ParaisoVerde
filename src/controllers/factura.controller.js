@@ -105,16 +105,33 @@ exports.obtenerFacturas = async (req, res) => {
   try {
     const { estadoPago } = req.query;
     
+    console.log('🔍 [DEBUG] Obteniendo facturas para usuario:', req.usuario.email, 'Rol:', req.usuario.rol);
+    
     let filtro = {};
     
     // Si es cliente, buscar facturas de sus reservas
     if (req.usuario.rol === 'cliente') {
-      const reservasUsuario = await Reserva.find({ usuario: req.usuario._id }).select('_id');
+      // Buscar tanto por usuario como por cliente asociado
+      const clienteAsociado = await require('../models/Cliente').findOne({ usuarioAsociado: req.usuario._id });
+      console.log('🔍 [DEBUG] Cliente asociado encontrado:', clienteAsociado?._id);
+      
+      const reservasUsuario = await Reserva.find({ 
+        $or: [
+          { usuario: req.usuario._id },
+          { cliente: clienteAsociado?._id }
+        ]
+      }).select('_id');
+      
+      console.log('🔍 [DEBUG] Reservas encontradas:', reservasUsuario.length);
+      console.log('🔍 [DEBUG] IDs de reservas:', reservasUsuario.map(r => r._id));
+      
       const reservaIds = reservasUsuario.map(r => r._id);
       filtro.reserva = { $in: reservaIds };
     }
 
     if (estadoPago) filtro.estadoPago = estadoPago;
+
+    console.log('🔍 [DEBUG] Filtro final:', JSON.stringify(filtro));
 
     const facturas = await Factura.find(filtro)
       .populate({
@@ -123,6 +140,8 @@ exports.obtenerFacturas = async (req, res) => {
       })
       .populate('cliente')
       .sort({ createdAt: -1 });
+
+    console.log('✅ [DEBUG] Facturas encontradas:', facturas.length);
 
     res.json({
       success: true,

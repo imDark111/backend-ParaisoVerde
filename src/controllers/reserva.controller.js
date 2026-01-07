@@ -135,9 +135,17 @@ exports.crearReserva = async (req, res) => {
     // Calcular número de noches
     const numeroNoches = Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24));
 
+    // Determinar el usuario de la reserva
+    // Si es admin creando reserva para un cliente, usar el usuarioAsociado del cliente
+    // Si es el cliente mismo, usar req.usuario._id
+    let usuarioReserva = req.usuario._id;
+    if (req.usuario.rol === 'admin' && cliente.usuarioAsociado) {
+      usuarioReserva = cliente.usuarioAsociado;
+    }
+
     // Crear reserva
     const reserva = new Reserva({
-      usuario: req.usuario._id,
+      usuario: usuarioReserva,
       cliente: cliente._id,
       departamento: departamentoId,
       fechaInicio: inicio,
@@ -223,13 +231,30 @@ exports.crearReserva = async (req, res) => {
 // @access  Private
 exports.obtenerReservas = async (req, res) => {
   try {
+    console.log('Usuario consultando reservas:', req.usuario.nombreUsuario, 'Rol:', req.usuario.rol);
+    
     const { estado, fechaInicio, fechaFin, departamento } = req.query;
     
     let filtro = {};
     
-    // Si es cliente, solo ver sus reservas
+    // Si es cliente, buscar primero el cliente asociado al usuario
     if (req.usuario.rol === 'cliente') {
-      filtro.usuario = req.usuario._id;
+      console.log('Filtrando reservas para cliente:', req.usuario._id);
+      const cliente = await Cliente.findOne({ usuarioAsociado: req.usuario._id });
+      if (cliente) {
+        filtro.cliente = cliente._id;
+        console.log('Cliente encontrado:', cliente._id);
+      } else {
+        console.log('No se encontró cliente asociado');
+        // Si no hay cliente asociado, no hay reservas
+        return res.json({
+          success: true,
+          count: 0,
+          data: []
+        });
+      }
+    } else {
+      console.log('Usuario admin - mostrando todas las reservas');
     }
 
     if (estado) filtro.estado = estado;
@@ -343,7 +368,9 @@ exports.actualizarReserva = async (req, res) => {
 // @access  Private
 exports.cancelarReserva = async (req, res) => {
   try {
-    const reserva = await Reserva.findById(req.params.id);
+    console.log('🔴 Intentando cancelar reserva:', req.params.id, 'Usuario:', req.usuario.nombreUsuario, 'Rol:', req.usuario.rol);
+    
+    const reserva = await Reserva.findById(req.params.id).populate('cliente');
 
     if (!reserva) {
       return res.status(404).json({
@@ -352,8 +379,25 @@ exports.cancelarReserva = async (req, res) => {
       });
     }
 
-    // Verificar permisos
-    if (req.usuario.rol !== 'admin' && reserva.usuario.toString() !== req.usuario._id.toString()) {
+    console.log('🔴 Reserva encontrada. Cliente de la reserva:', reserva.cliente._id);
+
+    // Verificar permisos: admin o cliente asociado a la reserva
+    let tienePermiso = req.usuario.rol === 'admin';
+    
+    if (!tienePermiso && req.usuario.rol === 'cliente') {
+      // Verificar si el usuario es el cliente asociado a la reserva
+      const clienteDelUsuario = await Cliente.findOne({ usuarioAsociado: req.usuario._id });
+      console.log('🔴 Cliente del usuario autenticado:', clienteDelUsuario ? clienteDelUsuario._id : 'No encontrado');
+      
+      if (clienteDelUsuario && reserva.cliente._id.toString() === clienteDelUsuario._id.toString()) {
+        tienePermiso = true;
+        console.log('🔴 Permiso concedido: cliente coincide');
+      } else {
+        console.log('🔴 Permiso denegado: cliente no coincide');
+      }
+    }
+
+    if (!tienePermiso) {
       return res.status(403).json({
         success: false,
         message: 'No tiene permiso para cancelar esta reserva'

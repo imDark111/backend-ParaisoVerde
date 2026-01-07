@@ -6,38 +6,36 @@ async function crearAdmin() {
   try {
     // Conectar a MongoDB
     await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI);
-    console.log('✅ Conectado a MongoDB');
+    console.log('Conectado a MongoDB');
 
     // Verificar si ya existe un admin
-    const adminExiste = await Usuario.findOne({ email: 'admin@paraisoverde.com' });
+    const adminExiste = await Usuario.findOne({ email: 'patrickcastillo@paraisoverde.com' });
     
     if (adminExiste) {
-      console.log('⚠️  Ya existe un usuario administrador');
+      console.log('Ya existe un usuario administrador con este email');
       process.exit(0);
     }
 
     // Crear usuario admin
     const admin = await Usuario.create({
-      nombreUsuario: 'admin',
-      email: 'admin@paraisoverde.com',
-      password: 'Admin123!',
-      nombres: 'Administrador',
-      apellidos: 'Sistema',
-      cedula: '0000000000',
-      fechaNacimiento: new Date('1990-01-01'),
-      telefono: '0999999999',
-      direccion: 'Hotel Paraíso Verde',
-      rol: 'admin'
+      nombreUsuario: 'Patrick Castillo', //Actualizable
+      email: 'patrickcastillo@paraisoverde.com', //Actualizable
+      password: 'Admin123!', //Actualizable
+      nombres: 'Patrick', //Actualizable
+      apellidos: 'Castillo', //Actualizable
+      cedula: '0707187865', //  Actualizable
+      fechaNacimiento: new Date('1999-10-14'), // Actualizable
+      telefono: '0999297777', // Actualizable
+      direccion: 'Hotel Paraíso Verde', // Actualizable
+      rol: 'admin' // No Actualizable
     });
 
-    console.log('✅ Usuario administrador creado exitosamente');
-    console.log('📧 Email: admin@paraisoverde.com');
-    console.log('🔑 Password: Admin123!');
-    console.log('⚠️  Por favor cambie la contraseña después del primer login');
+    console.log('Usuario administrador creado exitosamente');
+    console.log('Por favor cambie la contraseña después del primer login');
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('Error:', error);
     process.exit(1);
   }
 }

@@ -156,6 +156,43 @@ exports.obtenerEstadisticas = async (req, res) => {
       { $unwind: '$departamento' }
     ]);
 
+    // Top clientes más frecuentes
+    const topClientes = await Reserva.aggregate([
+      {
+        $group: {
+          _id: '$cliente',
+          totalReservas: { $sum: 1 }
+        }
+      },
+      { $sort: { totalReservas: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'clientes',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'cliente'
+        }
+      },
+      { $unwind: '$cliente' },
+      {
+        $lookup: {
+          from: 'usuarios',
+          localField: 'cliente.usuarioAsociado',
+          foreignField: '_id',
+          as: 'usuario'
+        }
+      },
+      { $unwind: '$usuario' },
+      {
+        $project: {
+          totalReservas: 1,
+          nombre: '$usuario.nombre',
+          email: '$usuario.email'
+        }
+      }
+    ]);
+
     res.json({
       success: true,
       data: {
@@ -182,7 +219,8 @@ exports.obtenerEstadisticas = async (req, res) => {
         tasaOcupacion,
         reservasPorMes,
         ingresosPorMes,
-        topDepartamentos
+        topDepartamentos,
+        topClientes
       }
     });
   } catch (error) {

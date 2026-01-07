@@ -120,8 +120,9 @@ app.listen(PORT, HOST, () => {
     console.log(`Servidor corriendo en Railway en puerto ${PORT}`);
     console.log(`URL: ${process.env.BASE_URL || 'Configurar BASE_URL'}`);
   } else {
-    console.log(`Servidor corriendo en http://192.168.0.11:${PORT}`);
-    console.log(`Accesible desde tu celular en la red local`);
+    // Usar localhost para evitar problemas en Docker y desarrollo local
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Accesible desde tu máquina local o red según configuración de Docker`);
   }
 });
 

@@ -1,4 +1,5 @@
 const Usuario = require('../models/Usuario');
+const Cliente = require('../models/Cliente');
 const { generarToken } = require('../middleware/auth');
 const { crearLogEspecifico } = require('../middleware/logger');
 const speakeasy = require('speakeasy');
@@ -9,7 +10,7 @@ const QRCode = require('qrcode');
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { nombreUsuario, email, password, nombres, apellidos, cedula, fechaNacimiento, telefono, direccion } = req.body;
+    const { nombreUsuario, email, password, nombres, apellidos, cedula, fechaNacimiento, telefono, direccion, nacionalidad } = req.body;
 
     // Verificar si el usuario ya existe
     const usuarioExiste = await Usuario.findOne({ 
@@ -45,6 +46,21 @@ exports.register = async (req, res) => {
       direccion,
       rol: 'cliente'
     });
+
+    // Crear cliente automáticamente para usuarios con rol 'cliente'
+    if (usuario.rol === 'cliente') {
+      await Cliente.create({
+        nombres,
+        apellidos,
+        cedula,
+        fechaNacimiento,
+        email,
+        telefono,
+        direccion,
+        nacionalidad: nacionalidad || 'No especificada',
+        usuarioAsociado: usuario._id
+      });
+    }
 
     // Crear log
     await crearLogEspecifico(
